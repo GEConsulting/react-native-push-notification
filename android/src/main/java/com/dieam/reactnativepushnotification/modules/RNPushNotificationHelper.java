@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.text.TextUtils;
 
 import com.facebook.react.bridge.ReadableMap;
 
@@ -209,14 +210,11 @@ public class RNPushNotificationHelper {
 
             if (largeIcon != null) {
                 largeIconResId = res.getIdentifier(largeIcon, "mipmap", packageName);
-            } else {
-                largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
-            }
 
-            Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
-
-            if (largeIconResId != 0 && (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
-                notification.setLargeIcon(largeIconBitmap);
+                Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
+                if (largeIconBitmap) {
+                    notification.setLargeIcon(largeIconBitmap);
+                }
             }
 
             notification.setSmallIcon(smallIconResId);
@@ -232,6 +230,12 @@ public class RNPushNotificationHelper {
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             bundle.putBoolean("userInteraction", true);
             intent.putExtra("notification", bundle);
+
+            String deepLink = bundle.getString("deepLink");
+            if (!TextUtils.isEmpty(deepLink)) {
+                intent.setData(Uri.parse(deepLink));
+                intent.setAction(Intent.ACTION_VIEW);
+            }
 
             if (!bundle.containsKey("playSound") || bundle.getBoolean("playSound")) {
                 Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
